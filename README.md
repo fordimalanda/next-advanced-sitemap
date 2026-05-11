@@ -31,30 +31,30 @@ import { getServerSitemapResponse, SitemapEntry } from 'next-advanced-sitemap';
 export async function GET() {
   const entries: SitemapEntry[] = [
     {
-      url: '[https://fomadev.com](https://fomadev.com)',
+      url: 'https://fomadev.com',
       lastmod: new Date(),
       changefreq: 'daily',
       priority: 1.0,
       alternates: [
-        { hreflang: 'fr', href: '[https://fomadev.com/fr](https://fomadev.com/fr)' },
-        { hreflang: 'en', href: '[https://fomadev.com/en](https://fomadev.com/en)' }
+        { hreflang: 'fr', href: 'https://fomadev.com/fr' },
+        { hreflang: 'en', href: 'https://fomadev.com/en' }
       ]
     },
     {
-      url: '[https://fomadev.com/dashboard](https://fomadev.com/dashboard)',
+      url: 'https://fomadev.com/dashboard',
       images: [
         {
-          loc: '[https://fomadev.com/charts/analytics.png](https://fomadev.com/charts/analytics.png)',
+          loc: 'https://fomadev.com/charts/analytics.png',
           title: 'Growth Analytics Chart',
           caption: 'Visual representation of monthly user growth.'
         }
       ]
     },
     {
-      url: '[https://fomadev.com/video-tutorial](https://fomadev.com/video-tutorial)',
+      url: 'https://fomadev.com/video-tutorial',
       videos: [
         {
-          thumbnail_loc: '[https://fomadev.com/thumbs/tutorial.jpg](https://fomadev.com/thumbs/tutorial.jpg)',
+          thumbnail_loc: 'https://fomadev.com/thumbs/tutorial.jpg)',
           title: 'Next.js Advanced SEO Tutorial',
           description: 'Learn how to implement advanced sitemaps in Next.js.',
           publication_date: new Date('2026-04-22')
