@@ -1,3 +1,8 @@
+/* * Copyright (c) 2026 Fordi / FomaDev. 
+ * Licensed under FomaDev Public License.
+ * See LICENSE file in the project root for full license information.
+ */
+
 "use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -45,6 +50,13 @@ function escapeXml(unsafe) {
 }
 
 // src/core/generator.ts
+function validateUrl(url, context) {
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    throw new Error(
+      `[next-advanced-sitemap] Invalid URL in ${context}: "${url}". URLs must start with http:// or https://`
+    );
+  }
+}
 function generateXml(entries) {
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 `;
@@ -59,12 +71,14 @@ function generateXml(entries) {
   xml += `        xmlns:xhtml="http://www.w3.org/1999/xhtml">
 `;
   for (const entry of entries) {
+    validateUrl(entry.url, "main entry");
     xml += `  <url>
 `;
     xml += `    <loc>${escapeXml(entry.url)}</loc>
 `;
     if (entry.alternates?.length) {
       for (const alt of entry.alternates) {
+        validateUrl(alt.href, "alternate link");
         xml += `    <xhtml:link rel="alternate" hreflang="${escapeXml(alt.hreflang)}" href="${escapeXml(alt.href)}" />
 `;
       }
@@ -84,6 +98,7 @@ function generateXml(entries) {
     }
     if (entry.images?.length) {
       for (const img of entry.images) {
+        validateUrl(img.loc, "image location");
         xml += `    <image:image>
 `;
         xml += `      <image:loc>${escapeXml(img.loc)}</image:loc>
@@ -98,6 +113,9 @@ function generateXml(entries) {
     }
     if (entry.videos?.length) {
       for (const vid of entry.videos) {
+        validateUrl(vid.thumbnail_loc, "video thumbnail");
+        if (vid.content_loc) validateUrl(vid.content_loc, "video content location");
+        if (vid.player_loc) validateUrl(vid.player_loc, "video player location");
         xml += `    <video:video>
 `;
         xml += `      <video:thumbnail_loc>${escapeXml(vid.thumbnail_loc)}</video:thumbnail_loc>

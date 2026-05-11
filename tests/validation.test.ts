@@ -1,3 +1,8 @@
+/* * Copyright (c) 2026 Fordi / FomaDev. 
+ * Licensed under FomaDev Public License.
+ * See LICENSE file in the project root for full license information.
+ */
+
 import { describe, it, expect } from 'vitest';
 import { generateXml } from '../src/core/generator';
 
