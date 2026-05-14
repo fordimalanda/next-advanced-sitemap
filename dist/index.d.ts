@@ -1,3 +1,8 @@
+/* * Copyright (c) 2026 Fordi / FomaDev. 
+ * Licensed under FomaDev Public License.
+ * See LICENSE file in the project root for full license information.
+ */
+
 /**
  * Interface pour les liens alternatifs (Hreflang / Multilingue)
  * @see https://developers.google.com/search/docs/specialty/international/localized-versions#sitemap
@@ -55,12 +60,23 @@ interface SitemapEntry {
     news?: SitemapNews;
     alternates?: SitemapAlternate[];
 }
+/**
+ * Options de configuration pour la génération du sitemap
+ */
+interface SitemapOptions {
+    /**
+     * Si true, injecte la date système actuelle (ISO) pour toutes les entrées
+     * qui n'ont pas de champ 'lastmod' défini.
+     */
+    autoLastmod?: boolean;
+}
 
 /**
- * Génère une réponse HTTP compatible Next.js (App Router)
+ * Génère une réponse HTTP compatible Next.js (App Router) avec options de configuration.
  * * @param entries - Liste des entrées du sitemap
- * @returns Une instance de Response contenant le flux XML
+ * @param options - Options de génération facultatives (ex: autoLastmod)
+ * @returns Une instance de Response contenant le flux XML configuré
  */
-declare function getServerSitemapResponse(entries: SitemapEntry[]): Response;
+declare function getServerSitemapResponse(entries: SitemapEntry[], options?: SitemapOptions): Response;
 
-export { type SitemapAlternate, type SitemapEntry, type SitemapImage, type SitemapNews, type SitemapVideo, getServerSitemapResponse };
+export { type SitemapAlternate, type SitemapEntry, type SitemapImage, type SitemapNews, type SitemapOptions, type SitemapVideo, getServerSitemapResponse };

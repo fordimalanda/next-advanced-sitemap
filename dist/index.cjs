@@ -1,3 +1,8 @@
+/* * Copyright (c) 2026 Fordi / FomaDev. 
+ * Licensed under FomaDev Public License.
+ * See LICENSE file in the project root for full license information.
+ */
+
 "use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -53,7 +58,8 @@ function validateUrl(url, context) {
     );
   }
 }
-function generateXml(entries) {
+function generateXml(entries, options = {}) {
+  const now = (/* @__PURE__ */ new Date()).toISOString();
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 `;
   xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -79,8 +85,12 @@ function generateXml(entries) {
 `;
       }
     }
-    if (entry.lastmod) {
-      const date = entry.lastmod instanceof Date ? entry.lastmod.toISOString() : entry.lastmod;
+    let lastmodValue = entry.lastmod;
+    if (options.autoLastmod && !lastmodValue) {
+      lastmodValue = now;
+    }
+    if (lastmodValue) {
+      const date = lastmodValue instanceof Date ? lastmodValue.toISOString() : lastmodValue;
       xml += `    <lastmod>${date}</lastmod>
 `;
     }
@@ -160,8 +170,8 @@ function generateXml(entries) {
 }
 
 // src/index.ts
-function getServerSitemapResponse(entries) {
-  const xml = generateXml(entries);
+function getServerSitemapResponse(entries, options = {}) {
+  const xml = generateXml(entries, options);
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
