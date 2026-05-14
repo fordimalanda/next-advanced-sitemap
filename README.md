@@ -12,8 +12,9 @@ While Next.js provides a built-in `MetadataRoute.Sitemap` utility, it currently 
 - **Google Video Support**: Improve search visibility for video content with thumbnail and description metadata.
 - **Google News Support**: Comply with Google News requirements including publication names and dates.
 - **Internationalization**: Seamless integration of `xhtml:link` tags for Hreflang and multi-regional SEO.
-- **Strict Validation (v1.0.1)**: Built-in safety checks to ensure all URLs follow absolute protocols (http/https), preventing search engine rejection.
+- **Auto-lastmod (v1.0.3)**: Optional automatic injection of the current system date for entries missing a `lastmod` value.
 - **Advanced XML Escaping (v1.0.2)**: Enhanced processor to handle complex special characters (`&`, `"`, `'`, `<`, `>`) in SEO metadata, ensuring XML integrity.
+- **Strict Validation (v1.0.1)**: Built-in safety checks to ensure all URLs follow absolute protocols (http/https).
 - **Developer Experience**: Fully typed with TypeScript, zero external dependencies, and optimized for Next.js Route Handlers.
 
 ## Installation
@@ -42,7 +43,7 @@ export async function GET() {
       ]
     },
     {
-      url: 'https://fomadev.com/dashboard,
+      url: 'https://fomadev.com/dashboard',
       images: [
         {
           loc: 'https://fomadev.com/charts/analytics.png',
@@ -57,14 +58,15 @@ export async function GET() {
         {
           thumbnail_loc: 'https://fomadev.com/thumbs/tutorial.jpg',
           title: 'Next.js Advanced SEO Tutorial',
-          description: 'Learn how to implement advanced sitemaps in Next.js.',
+          description: 'Learn how to implement advanced sitemaps in Next.js & React.',
           publication_date: new Date('2026-04-22')
         }
       ]
     }
   ];
 
-  return getServerSitemapResponse(entries);
+  // (Optional) v1.0.3: Enable autoLastmod to fill missing dates automatically
+  return getServerSitemapResponse(entries, { autoLastmod: true });
 }
 ```
 
@@ -73,6 +75,10 @@ export async function GET() {
 ### getServerSitemapResponse(entries: SitemapEntry[])
 
 Generates a standard Next.js `Response` object with the correct `application/xml` content-type and optimized cache headers.
+
+### Options:
+
+* `autoLastmod` (boolean): If `true`, injects the current ISO date for any entry missing the `lastmod` property.
 
 ### SitemapEntry Object
 
@@ -93,7 +99,7 @@ Generates a standard Next.js `Response` object with the correct `application/xml
       <tr>
           <td><code>lastmod</code></td>
           <td class="type-label">Date | string</td>
-          <td>(Optional) Last modification date in ISO format.</td>
+          <td>(Optional) Last modification date.</td>
       </tr>
       <tr>
           <td><code>changefreq</code></td>
@@ -132,11 +138,11 @@ Generates a standard Next.js `Response` object with the correct `application/xml
 
 ### Validation & Safety
 
-Starting from version 1.0.1, the library performs strict validation on all link-related fields. If a URL does not include a valid protocol (http/https), the generator will throw a descriptive error to prevent deploying malformed sitemaps.
+The library performs strict validation. If a URL does not include a valid protocol (http/https), the generator throws a descriptive error to prevent deploying malformed sitemaps.
 
 ### Advanced XML Security
 
-Since version 1.0.2, the library includes an enhanced encoding processor. It automatically detects and escapes special characters within titles, descriptions, and captions to prevent XML corruption. For example, a title like "Tuto & News" is automatically converted to "Tuto &amp; News", ensuring the sitemap remains readable by search engine crawlers.
+The library includes an enhanced encoding processor. It automatically detects and escapes special characters within titles, descriptions, and captions to prevent XML corruption (e.g., `&` becomes `&amp;`).
 
 ### Performance
 
