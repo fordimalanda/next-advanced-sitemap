@@ -3,7 +3,7 @@
  * See LICENSE file in the project root for full license information.
  */
 
-import { SitemapEntry } from '../types/sitemap.js';
+import { SitemapEntry, SitemapOptions } from '../types/sitemap.js';
 import { escapeXml } from '../utils/xml-escape.js';
 
 /**
@@ -20,7 +20,9 @@ function validateUrl(url: string, context: string): void {
 /**
  * Génère le flux XML complet du sitemap incluant les extensions Images, Vidéos, News et Hreflang.
  */
-export function generateXml(entries: SitemapEntry[]): string {
+export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {}): string {
+  const now = new Date().toISOString();
+  
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n`;
   xml += `        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"\n`;
@@ -43,12 +45,20 @@ export function generateXml(entries: SitemapEntry[]): string {
       }
     }
 
-    // Métadonnées standard
-    if (entry.lastmod) {
-      const date = entry.lastmod instanceof Date ? entry.lastmod.toISOString() : entry.lastmod;
+    // --- LOGIQUE AUTO-LASTMOD ---
+    let lastmodValue = entry.lastmod;
+    
+    // Si l'option est activée et que lastmod est absent, on injecte la date système actuelle
+    if (options.autoLastmod && !lastmodValue) {
+      lastmodValue = now;
+    }
+
+    if (lastmodValue) {
+      const date = lastmodValue instanceof Date ? lastmodValue.toISOString() : lastmodValue;
       xml += `    <lastmod>${date}</lastmod>\n`;
     }
 
+    // Autres métadonnées standard
     if (entry.changefreq) {
       xml += `    <changefreq>${entry.changefreq}</changefreq>\n`;
     }
