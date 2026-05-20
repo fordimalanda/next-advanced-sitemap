@@ -7,12 +7,34 @@ import { SitemapEntry, SitemapOptions } from '../types/sitemap.js';
 import { escapeXml } from '../utils/xml-escape.js';
 
 /**
- * Valide que l'URL commence par un protocole autorisé.
+ * Valide de manière stricte le format et la structure d'une URL.
  */
 function validateUrl(url: string, context: string): void {
+  // 1. Vérification rapide du protocole
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     throw new Error(
       `[next-advanced-sitemap] Invalid URL in ${context}: "${url}". URLs must start with http:// or https://`
+    );
+  }
+
+  // 2. Validation fine de la structure (v1.0.4)
+  let isValid = false;
+  
+  if (typeof URL.canParse === 'function') {
+    isValid = URL.canParse(url);
+  } else {
+    // Repli sécurisé pour les environnements Node.js plus anciens
+    try {
+      new URL(url);
+      isValid = true;
+    } catch {
+      isValid = false;
+    }
+  }
+
+  if (!isValid) {
+    throw new Error(
+      `[next-advanced-sitemap] Malformed URL structure detected in ${context}: "${url}". Please verify spaces or special characters.`
     );
   }
 }

@@ -5,14 +5,16 @@
 
 import { describe, it, expect } from 'vitest';
 import { generateXml } from '../src/core/generator';
+import { SitemapEntry } from '../src/types/sitemap';
 
-describe('URL Validation', () => {
-  it('should throw an error if main URL is invalid', () => {
+describe('URL Validation & Strict Structure (v1.0.4)', () => {
+  // --- TESTS DE PROTOCOLE DE BASE ---
+  it('should throw an error if main URL prefix is invalid', () => {
     const entries = [{ url: 'invalid-url' }];
     expect(() => generateXml(entries as any)).toThrow('[next-advanced-sitemap] Invalid URL');
   });
 
-  it('should throw an error if image URL is invalid', () => {
+  it('should throw an error if image URL lacks protocol', () => {
     const entries = [
       { 
         url: 'https://fomadev.com',
@@ -23,7 +25,39 @@ describe('URL Validation', () => {
   });
 
   it('should pass if URLs are correct', () => {
-    const entries = [{ url: 'https://fomadev.com' }];
+    const entries: SitemapEntry[] = [{ url: 'https://fomadev.com' }];
     expect(() => generateXml(entries)).not.toThrow();
+  });
+
+  // --- TESTS DE STRUCTURE FINE (v1.0.4) ---
+  it('should pass with a perfectly valid absolute URL', () => {
+    const entries: SitemapEntry[] = [{ url: 'https://fomadev.com/valid-page' }];
+    expect(() => generateXml(entries)).not.toThrow();
+  });
+
+  it('should throw an error if the URL contains internal spaces', () => {
+    const entries: SitemapEntry[] = [{ url: 'https://fomadev.com/invalid page with spaces' }];
+    expect(() => generateXml(entries)).toThrow(
+      '[next-advanced-sitemap] Malformed URL structure detected in main entry'
+    );
+  });
+
+  it('should throw an error if the URL is incomplete or missing a host', () => {
+    const entries: SitemapEntry[] = [{ url: 'https://' }];
+    expect(() => generateXml(entries)).toThrow(
+      '[next-advanced-sitemap] Malformed URL structure detected in main entry'
+    );
+  });
+
+  it('should validate sub-resource URLs like alternate links and image locations', () => {
+    const entries: SitemapEntry[] = [
+      {
+        url: 'https://fomadev.com',
+        images: [{ loc: 'https://fomadev.com/invalid space.png' }]
+      }
+    ];
+    expect(() => generateXml(entries)).toThrow(
+      '[next-advanced-sitemap] Malformed URL structure detected in image location'
+    );
   });
 });
