@@ -10,8 +10,9 @@ export * from './types/sitemap.js';
 
 /**
  * Génère une réponse HTTP compatible Next.js (App Router) avec options de configuration.
+ * v1.0.9 : Injection dynamique et personnalisable de l'en-tête Cache-Control via l'option maxAge
  * * @param entries - Liste des entrées du sitemap
- * @param options - Options de génération facultatives (ex: autoLastmod)
+ * @param options - Options de génération et de mise en cache (ex: autoLastmod, maxAge)
  * @returns Une instance de Response contenant le flux XML configuré
  */
 export function getServerSitemapResponse(
@@ -20,10 +21,15 @@ export function getServerSitemapResponse(
 ): Response {
   const xml = generateXml(entries, options);
 
+  // Détermination de la stratégie de mise en cache (v1.0.9)
+  const cacheControlHeader = options.maxAge !== undefined
+    ? `public, max-age=${options.maxAge}, must-revalidate`
+    : 'public, s-maxage=86400, stale-while-revalidate';
+
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml',
-      'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate',
+      'Cache-Control': cacheControlHeader,
     },
   });
 }
