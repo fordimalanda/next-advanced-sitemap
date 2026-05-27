@@ -1,8 +1,3 @@
-/* * Copyright (c) 2026 Fordi / FomaDev. 
- * Licensed under FomaDev Public License.
- * See LICENSE file in the project root for full license information.
- */
-
 // src/utils/xml-escape.ts
 function escapeXml(unsafe) {
   if (!unsafe) return "";
@@ -177,10 +172,11 @@ function generateXml(entries, options = {}) {
 // src/index.ts
 function getServerSitemapResponse(entries, options = {}) {
   const xml = generateXml(entries, options);
+  const cacheControlHeader = options.maxAge !== void 0 ? `public, max-age=${options.maxAge}, must-revalidate` : "public, s-maxage=86400, stale-while-revalidate";
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
-      "Cache-Control": "public, s-maxage=86400, stale-while-revalidate"
+      "Cache-Control": cacheControlHeader
     }
   });
 }

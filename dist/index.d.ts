@@ -1,8 +1,3 @@
-/* * Copyright (c) 2026 Fordi / FomaDev. 
- * Licensed under FomaDev Public License.
- * See LICENSE file in the project root for full license information.
- */
-
 /**
  * Fréquences de changement autorisées dans la spécification des sitemaps
  */
@@ -85,12 +80,19 @@ interface SitemapOptions {
      * Les entrées sans priorité héritent d'une valeur par défaut de 0.5.
      */
     sortByPriority?: boolean;
+    /**
+     * Durée maximale de mise en cache (TTL) exprimée en secondes.
+     * Si définie, l'en-tête Cache-Control prendra la forme : public, max-age=X, must-revalidate.
+     * Si omise, conserve la stratégie par défaut hautement performante pour CDN.
+     */
+    maxAge?: number;
 }
 
 /**
  * Génère une réponse HTTP compatible Next.js (App Router) avec options de configuration.
+ * v1.0.9 : Injection dynamique et personnalisable de l'en-tête Cache-Control via l'option maxAge
  * * @param entries - Liste des entrées du sitemap
- * @param options - Options de génération facultatives (ex: autoLastmod)
+ * @param options - Options de génération et de mise en cache (ex: autoLastmod, maxAge)
  * @returns Une instance de Response contenant le flux XML configuré
  */
 declare function getServerSitemapResponse(entries: SitemapEntry[], options?: SitemapOptions): Response;

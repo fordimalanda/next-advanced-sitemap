@@ -20,6 +20,7 @@ While Next.js provides a built-in `MetadataRoute.Sitemap` utility, it currently 
 - **Auto-lastmod (v1.0.3)**: Optional automatic injection of the current system date for entries missing a `lastmod` value.
 - **Advanced XML Escaping (v1.0.2)**: Enhanced processor to handle complex special characters (`&`, `"`, `'`, `<`, `>`) in SEO metadata, ensuring XML integrity.
 - **Developer Experience**: Fully typed with TypeScript, zero external dependencies, and optimized for Next.js Route Handlers.
+- **Custom TTL Cache-Control (v1.0.9)**: Direct control over sitemap caching persistence using a clean `maxAge` configuration option to lower crawl footprints on backend nodes.
 
 ## Installation
 
@@ -91,6 +92,8 @@ Generates a standard Next.js `Response` object with the correct `application/xml
 
 * `sortByPriority` (boolean): If `true`, sorts the sitemap records in a descending sequence based on their priority level (`1.0` down to `0.0`) before writing the XML stream. Items without an explicit priority fall back safely to `0.5`.
 
+* `maxAge` (number): (Optional) Maximum lifespan duration expressed in seconds. Transforms the HTTP communication layer payload to use a rigid `public, max-age=X, must-revalidate` schema.
+
 ### SitemapEntry Object
 
 <table>
@@ -147,7 +150,7 @@ Generates a standard Next.js `Response` object with the correct `application/xml
 
 ## Technical Implementation
 
-### Priority Auto-Sorting (v1.0.8 Update)
+### Priority Auto-Sorting
 Search engine crawlers allocate a finite scanning resource quota (crawl budget) when inspecting domain properties. By default, raw database queries or collection iterations generate un-ordered XML lists, causing indexers to process trivial nodes ahead of strategic content. When `sortByPriority` is enabled, the generation engine executes an immutable descending sorting operation. Unlabeled entries smoothly receive an RFC-compliant fallback baseline score of `0.5`, allowing top-tier entries to line up at the absolute top of the index file.
 
 ### Auto-Trimming & Ingestion Sanitization
