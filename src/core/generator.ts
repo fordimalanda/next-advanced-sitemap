@@ -11,24 +11,20 @@ import { escapeXml } from '../utils/xml-escape.js';
  * v1.0.7 : Intégration de l'Auto-Trimming (nettoyage des espaces de début et de fin)
  */
 function sanitizeAndValidateUrl(rawUrl: string, context: string): string {
-  // 1. Auto-Trimming (v1.0.7)
   const url = rawUrl ? rawUrl.trim() : '';
 
-  // 2. Vérification rapide du protocole
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     throw new Error(
       `[next-advanced-sitemap] Invalid URL in ${context}: "${url}". URLs must start with http:// or https://`
     );
   }
 
-  // 3. Sécurité v1.0.4 : Interdire strictement les espaces blancs internes non encodés
   if (url.includes(' ')) {
     throw new Error(
       `[next-advanced-sitemap] Malformed URL structure detected in ${context}: "${url}". Please verify spaces or special characters.`
     );
   }
 
-  // 4. Validation fine de la structure globale via le moteur natif
   let isValid = false;
   if (typeof URL.canParse === 'function') {
     isValid = URL.canParse(url);
@@ -47,25 +43,22 @@ function sanitizeAndValidateUrl(rawUrl: string, context: string): string {
     );
   }
 
-  return url; // Retourne l'URL nettoyée
+  return url;
 }
 
 /**
  * Génère le flux XML complet du sitemap incluant les extensions Images, Vidéos, News et Hreflang.
- * v1.0.8 : Intégration du tri automatique optionnel par priorité (Auto-Sorting)
+ * v1.1.0 : Prise en charge des attributs étendus <image:geo_location> et <image:license>
  */
 export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {}): string {
   const now = new Date().toISOString();
-  
-  // Cloner le tableau d'entrées pour éviter de modifier la structure d'origine par effet de bord
   let finalEntries = [...entries];
 
-  // Exécuter l'Auto-Sorting si l'option sortByPriority est activée
   if (options.sortByPriority) {
     finalEntries.sort((a, b) => {
       const priorityA = a.priority !== undefined ? (a.priority as number) : 0.5;
       const priorityB = b.priority !== undefined ? (b.priority as number) : 0.5;
-      return priorityB - priorityA; // Ordre décroissant : de 1.0 à 0.0
+      return priorityB - priorityA;
     });
   }
   
@@ -77,13 +70,11 @@ export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {
   xml += `        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n`;
 
   for (const entry of finalEntries) {
-    // Validation et nettoyage URL principale
     const cleanMainUrl = sanitizeAndValidateUrl(entry.url, 'main entry');
 
     xml += `  <url>\n`;
     xml += `    <loc>${escapeXml(cleanMainUrl)}</loc>\n`;
 
-    // Support Hreflang (Internationalisation)
     if (entry.alternates?.length) {
       for (const alt of entry.alternates) {
         const cleanAltUrl = sanitizeAndValidateUrl(alt.href, 'alternate link');
@@ -91,7 +82,6 @@ export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {
       }
     }
 
-    // --- LOGIQUE AUTO-LASTMOD ---
     let lastmodValue = entry.lastmod;
     if (options.autoLastmod && !lastmodValue) {
       lastmodValue = now;
@@ -110,14 +100,27 @@ export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {
       xml += `    <priority>${(entry.priority as number).toFixed(1)}</priority>\n`;
     }
 
-    // Extension Images
+    // Extension Images - enrichie en v1.1.0
     if (entry.images?.length) {
       for (const img of entry.images) {
         const cleanImgUrl = sanitizeAndValidateUrl(img.loc, 'image location');
+        
         xml += `    <image:image>\n`;
         xml += `      <image:loc>${escapeXml(cleanImgUrl)}</image:loc>\n`;
         if (img.title) xml += `      <image:title>${escapeXml(img.title)}</image:title>\n`;
         if (img.caption) xml += `      <image:caption>${escapeXml(img.caption)}</image:caption>\n`;
+        
+        // SEO Local v1.1.0
+        if (img.geo_location) {
+          xml += `      <image:geo_location>${escapeXml(img.geo_location)}</image:geo_location>\n`;
+        }
+        
+        // Gestion des Licences Google Images v1.1.0
+        if (img.license) {
+          const cleanLicenseUrl = sanitizeAndValidateUrl(img.license, 'image license URL');
+          xml += `      <image:license>${escapeXml(cleanLicenseUrl)}</image:license>\n`;
+        }
+        
         xml += `    </image:image>\n`;
       }
     }
