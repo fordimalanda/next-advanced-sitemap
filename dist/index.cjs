@@ -139,6 +139,15 @@ function generateXml(entries, options = {}) {
 `;
         if (img.caption) xml += `      <image:caption>${escapeXml(img.caption)}</image:caption>
 `;
+        if (img.geo_location) {
+          xml += `      <image:geo_location>${escapeXml(img.geo_location)}</image:geo_location>
+`;
+        }
+        if (img.license) {
+          const cleanLicenseUrl = sanitizeAndValidateUrl(img.license, "image license URL");
+          xml += `      <image:license>${escapeXml(cleanLicenseUrl)}</image:license>
+`;
+        }
         xml += `    </image:image>
 `;
       }

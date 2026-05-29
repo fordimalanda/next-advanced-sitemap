@@ -21,6 +21,7 @@ While Next.js provides a built-in `MetadataRoute.Sitemap` utility, it currently 
 - **Advanced XML Escaping (v1.0.2)**: Enhanced processor to handle complex special characters (`&`, `"`, `'`, `<`, `>`) in SEO metadata, ensuring XML integrity.
 - **Developer Experience**: Fully typed with TypeScript, zero external dependencies, and optimized for Next.js Route Handlers.
 - **Custom TTL Cache-Control (v1.0.9)**: Direct control over sitemap caching persistence using a clean `maxAge` configuration option to lower crawl footprints on backend nodes.
+- **Local SEO & Image Licensing (v1.1.0)**: Enhanced Google Images schema integration with full support for `geo_location` and programmatic `license` badges to protect visual assets and boost image search CTR.
 
 ## Installation
 
@@ -144,6 +145,16 @@ Generates a standard Next.js `Response` object with the correct `application/xml
           <td><code>alternates</code></td>
           <td class="type-label">SitemapAlternate[]</td>
           <td>(Optional) Regional alternate URLs (Hreflang).</td>
+      </tr>
+      <tr>
+          <td><code>geo_location</code></td>
+          <td class="type-label">string</td>
+          <td>(Optional) Geographic location string of the image (e.g., "Kinshasa, DRC").</td>
+      </tr>
+      <tr>
+          <td><code>license</code></td>
+          <td class="type-label">string</td>
+          <td>(Optional) Valid HTTP/HTTPS URL addressing the licensing rights or usage terms of the image asset.</td>
       </tr>
   </tbody>
 </table>
