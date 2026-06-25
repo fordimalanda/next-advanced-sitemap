@@ -25,14 +25,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm' # Active le cache pour accélérer les futurs builds
 
-      # 3. Installe proprement et de manière exhaustive toutes les dépendances
+      # 3. Installation stricte et déterministe des dépendances
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      # 4. Exécute la suite complète de tes 35 tests avec Vitest
+      # 4. Exécute la suite complète des 35 tests avec Vitest en mode CI (single run)
       - name: Execute strict test suite
-        run: npm run test
+        run: npx vitest run
 
       # 5. Compile le code avec Tsup pour valider le build de production
       - name: Validate production build
