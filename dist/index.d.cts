@@ -1,3 +1,8 @@
+/* * Copyright (c) 2026 Fordi / FomaDev. 
+ * Licensed under FomaDev Public License.
+ * See LICENSE file in the project root for full license information.
+ */
+
 /**
  * Fréquences de changement autorisées dans la spécification des sitemaps
  */
@@ -43,6 +48,8 @@ interface SitemapVideo {
     view_count?: number;
     publication_date?: Date | string;
     family_friendly?: 'yes' | 'no';
+    /** (Optional) v1.1.1: Indique si la vidéo est une diffusion en direct ('yes' ou 'no'). */
+    live?: 'yes' | 'no';
 }
 /**
  * Interface pour Google News

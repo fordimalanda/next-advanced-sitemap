@@ -1,3 +1,8 @@
+/* * Copyright (c) 2026 Fordi / FomaDev. 
+ * Licensed under FomaDev Public License.
+ * See LICENSE file in the project root for full license information.
+ */
+
 // src/utils/xml-escape.ts
 function escapeXml(unsafe) {
   if (!unsafe) return "";
@@ -146,6 +151,10 @@ function generateXml(entries, options = {}) {
         if (vid.publication_date) {
           const vDate = vid.publication_date instanceof Date ? vid.publication_date.toISOString() : vid.publication_date;
           xml += `      <video:publication_date>${vDate}</video:publication_date>
+`;
+        }
+        if (vid.live) {
+          xml += `      <video:live>${vid.live}</video:live>
 `;
         }
         xml += `    </video:video>
