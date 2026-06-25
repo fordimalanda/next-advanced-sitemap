@@ -26,9 +26,9 @@ jobs:
         with:
           node-version: 22
 
-      # 3. Installe proprement les dépendances du projet
-      - name: Install dependencies
-        run: npm install
+      # 3. Force l'installation de TOUTES les dépendances (y compris les devDependencies comme vitest)
+      - name: Install dependencies (including dev tools)
+        run: npm install --include=dev
 
       # 4. Exécute la matrice stricte de tes tests unitaires (Vitest)
       - name: Execute strict test suite
