@@ -43,5 +43,14 @@
   "bugs": {
     "url": "https://github.com/fomadev/next-advanced-sitemap/issues"
   },
-  "homepage": "https://github.com/fomadev/next-advanced-sitemap#readme"
+  "homepage": "https://github.com/fomadev/next-advanced-sitemap#readme",
+  "devDependencies": {
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.3",
+    "vitest": "^1.4.0"
+  },
+  "peerDependencies": {
+    "next": ">=13.0.0",
+    "react": ">=18.0.0"
+  }
 }
