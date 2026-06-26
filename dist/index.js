@@ -1,3 +1,8 @@
+/* * Copyright (c) 2026 Fordi / FomaDev. 
+ * Licensed under FomaDev Public License.
+ * See LICENSE file in the project root for full license information.
+ */
+
 // src/utils/xml-escape.ts
 function escapeXml(unsafe) {
   if (!unsafe) return "";
@@ -109,12 +114,16 @@ function generateXml(entries, options = {}) {
 `;
         xml += `      <image:loc>${escapeXml(cleanImgUrl)}</image:loc>
 `;
-        if (img.title) xml += `      <image:title>${escapeXml(img.title)}</image:title>
+        if (img.title && img.title.trim() !== "") {
+          xml += `      <image:title>${escapeXml(img.title.trim())}</image:title>
 `;
-        if (img.caption) xml += `      <image:caption>${escapeXml(img.caption)}</image:caption>
+        }
+        if (img.caption && img.caption.trim() !== "") {
+          xml += `      <image:caption>${escapeXml(img.caption.trim())}</image:caption>
 `;
-        if (img.geo_location) {
-          xml += `      <image:geo_location>${escapeXml(img.geo_location)}</image:geo_location>
+        }
+        if (img.geo_location && img.geo_location.trim() !== "") {
+          xml += `      <image:geo_location>${escapeXml(img.geo_location.trim())}</image:geo_location>
 `;
         }
         if (img.license) {
@@ -146,6 +155,14 @@ function generateXml(entries, options = {}) {
         if (vid.publication_date) {
           const vDate = vid.publication_date instanceof Date ? vid.publication_date.toISOString() : vid.publication_date;
           xml += `      <video:publication_date>${vDate}</video:publication_date>
+`;
+        }
+        if (vid.duration !== void 0) {
+          xml += `      <video:duration>${Math.floor(vid.duration)}</video:duration>
+`;
+        }
+        if (vid.view_count !== void 0) {
+          xml += `      <video:view_count>${Math.floor(vid.view_count)}</video:view_count>
 `;
         }
         if (vid.live) {
