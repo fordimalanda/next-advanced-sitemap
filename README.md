@@ -11,23 +11,22 @@ While Next.js provides a built-in `MetadataRoute.Sitemap` utility, it currently 
 
 ## Features
 
-- **Google Images Support**: Index visual assets such as dashboard charts, infographics, and banners.
-- **Image Accessibility & E-commerce Protection (v1.1.2)**: Advanced protection against empty text strings or white spaces (`.trim()`) in `title` and `caption` fields to prevent malformed XML tags, combined with robust escaping.
-- **Google Video Support**: Improve search visibility for video content with thumbnail, description, and statistical metadata.
-- **Video Engagement Metrics (v1.1.3 Preview)**: Secure structural injection of `<video:duration>` and `<video:view_count>` with automatic decimal truncation (`Math.floor`) to match Google requirements.
-- **Google Video Live Streaming (v1.1.1)**: Native injection of the `<video:live>` parameter to flag real-time broadcasts and instantly trigger red **LIVE** badges on Google SERP matrices.
-- **Google News Support**: Comply with Google News requirements including publication names and dates.
-- **Internationalization**: Seamless integration of `xhtml:link` tags for Hreflang and multi-regional SEO.
-- **Priority Auto-Sorting (v1.0.8)**: Optional deterministic descending sort (`1.0` to `0.0`) based on entry weights to present your most strategic pages to crawlers first.
-- **Auto-Trimming Sanitization (v1.0.7)**: Automatic `.trim()` execution on all URL fields to silently correct leading/trailing whitespace errors from CMS or databases.
-- **Native Date Polymorphism (v1.0.6)**: Full support for native JavaScript `Date` objects inside Google News and Video extensions—no manual conversion required.
-- **Strict SEO Enum Typing (v1.0.5)**: Compile-time validation and IDE autocompletion for `changefreq` and `priority` values to prevent typos.
-- **Strict Structural Validation (v1.0.4)**: Advanced URL parsing using the platform-native engine to intercept syntax errors and unencoded whitespaces before deployment.
-- **Auto-lastmod (v1.0.3)**: Optional automatic injection of the current system date for entries missing a `lastmod` value.
-- **Advanced XML Escaping (v1.0.2)**: Enhanced processor to handle complex special characters (`&`, `"`, `'`, `<`, `>`) in SEO metadata, ensuring XML integrity.
-- **Developer Experience**: Fully typed with TypeScript, zero external dependencies, and optimized for Next.js Route Handlers.
+- **Google Images Support**: Complete indexation of visual assets with support for titles, captions, local SEO positioning, and copyright protections.
+- **Image Accessibility Protection (v1.1.2)**: Advanced preventive protection against empty text strings or spaces (`.trim()`) in `title` and `caption` fields to completely eliminate malformed empty XML tokens.
+- **Google Video Support**: Boost video search layouts and video-carousel presence on Google Search with complete structured data encapsulation.
+- **Video Engagement Metrics & Validation (v1.1.3)**: Native integration of `<video:duration>` and `<video:view_count>` statistical metrics featuring deterministic float truncation (`Math.floor`) and strict bounding boundaries (0 to 28,800 seconds max).
+- **Google Video Live Streaming (v1.1.1)**: Native injection of the `<video:live>` parameter to flag active real-time broadcasts and instantly trigger red **LIVE** badges on Google SERP matrices.
+- **Google News Support**: Instant discovery for news publications with strict support for required news name, language tag, and publication date attributes.
+- **Internationalization (Hreflang)**: Seamless rendering of `xhtml:link` relation tags to govern multi-regional and multilingual indexing across global markets.
+- **Priority Auto-Sorting (v1.0.8)**: Optional deterministic descending sort (`1.0` down to `0.0`) based on entry weights to present your most strategic revenue-driving pages to crawlers first.
+- **Auto-Trimming Sanitization (v1.0.7)**: Automatic `.trim()` execution on all URL structures to silently correct leading/trailing whitespace errors originating from CMS fields or raw databases.
+- **Native Date Polymorphism (v1.0.6)**: Full support for native JavaScript `Date` objects inside all extensions—handling internal conversion and structural formatting automatically.
+- **Strict SEO Enum Typing (v1.0.5)**: Compile-time validation and IDE autocompletion for `changefreq` and `priority` keys to completely lock out manual layout typos.
+- **Strict Structural Validation (v1.0.4)**: Advanced URL parsing using the platform-native engine to intercept syntax errors and unencoded internal spaces before application deployment.
+- **Auto-lastmod (v1.0.3)**: Optional automatic injection of the current system ISO date for entries missing an explicit `lastmod` tracking value.
+- **Deep XML Metadata Escaping (v1.0.2)**: Enhanced, high-performance regex processor to safely handle complex special characters (`&`, `"`, `'`, `<`, `>`) inside titles, descriptions, and captions.
 - **Custom TTL Cache-Control (v1.0.9)**: Direct control over sitemap caching persistence using a clean `maxAge` configuration option to lower crawl footprints on backend nodes.
-- **Local SEO & Image Licensing (v1.1.0)**: Enhanced Google Images schema integration with full support for `geo_location` and programmatic `license` badges to protect visual assets and boost image search CTR.
+- **Local SEO & Image Licensing (v1.1.0)**: Support for `geo_location` parameters and programmatic `license` badges to trigger Google's image search retail overlay.
 
 ## Installation
 
@@ -59,10 +58,12 @@ export async function GET() {
       priority: 0.9,
       videos: [
         {
-          thumbnail_loc: 'https://fomadev.com/thumbs/live.jpg',
+          thumbnail_loc: 'https://fomadev.com/thumbs/live.jpg         ',
           title: 'FomaDev Live Tech Session',
           description: 'Building production-grade packages with Next.js.',
           publication_date: new Date(),
+          duration: 3600, // v1.1.3: Statistical metric (Duration in seconds)
+          view_count: 1420, // v1.1.3: Engagement metric (Views integer)
           live: 'yes' // v1.1.1: Triggers the official Google LIVE badge on SERP
         }
       ]
@@ -117,58 +118,163 @@ Generates a standard Next.js `Response` object with the correct `application/xml
   <tbody>
       <tr>
           <td><code>url</code></td>
-          <td class="type-label">string</td>
-          <td>The absolute URL of the page (must start with <strong>http/https</strong>).</td>
+          <td>string</td>
+          <td><strong>Required.</strong> Absolute target link (must begin with http:// or https://).</td>
       </tr>
       <tr>
           <td><code>lastmod</code></td>
-          <td class="type-label">Date | string</td>
-          <td>(Optional) Last modification date.</td>
+          <td>Date | string</td>
+          <td>Optional tracking timestamp reflecting last structural update.</td>
       </tr>
       <tr>
           <td><code>changefreq</code></td>
-          <td class="type-label">SitemapChangeFreq</td>
-          <td>(Optional) Bounded search engine hint ('always', 'daily', etc.).</td>
+          <td>SitemapChangeFreq</td>
+          <td>Optional hint keyword mapped to engine crawling loops</td>
       </tr>
       <tr>
           <td><code>priority</code></td>
-          <td class="type-label">SitemapPriority</td>
-          <td>(Optional) Bounded priority float value (0.0 to 1.0).</td>
+          <td>SitemapPriority</td>
+          <td>Optional weight coefficient bounding page value from 0.0 to 1.0.</td>
       </tr>
       <tr>
           <td><code>images</code></td>
-          <td class="type-label">SitemapImage[]</td>
-          <td>(Optional) Array of image metadata for Google Images.</td>
+          <td>SitemapImage[]</td>
+          <td>Optional array containing structural metadata assets for Google Images.</td>
       </tr>
       <tr>
           <td><code>videos</code></td>
-          <td class="type-label">SitemapVideo[]</td>
-          <td>(Optional) Array of video metadata for Google Videos.</td>
+          <td>SitemapVideo[]</td>
+          <td>Optional array conveying detailed schemas for rich video indexation.</td>
       </tr>
       <tr>
           <td><code>news</code></td>
-          <td class="type-label">SitemapNews</td>
-          <td>(Optional) Metadata for Google News indexing.</td>
+          <td>SitemapNews</td>
+          <td>Optional integration configuration complying with Google News indexing rules.</td>
       </tr>
       <tr>
           <td><code>alternates</code></td>
-          <td class="type-label">SitemapAlternate[]</td>
-          <td>(Optional) Regional alternate URLs (Hreflang).</td>
+          <td>SitemapAlternate[]</td>
+          <td>Optional translation links array serving Hreflang indexing loops.</td>
       </tr>
       <tr>
           <td><code>geo_location</code></td>
-          <td class="type-label">string</td>
+          <td>string</td>
           <td>(Optional) Geographic location string of the image (e.g., "Kinshasa, DRC").</td>
       </tr>
       <tr>
           <td><code>license</code></td>
-          <td class="type-label">string</td>
+          <td>string</td>
           <td>(Optional) Valid HTTP/HTTPS URL addressing the licensing rights or usage terms of the image asset.</td>
       </tr>
   </tbody>
 </table>
 
+### SitemapImage
+
+<table>
+  <thead>
+      <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>loc</code></td>
+          <td>string</td>
+          <td><strong>Required.</strong> The absolute URL targeting the source image asset.</td>
+      </tr>
+      <tr>
+          <td><code>title</code></td>
+          <td>string</td>
+          <td>Optional text representation describing the visual asset. Auto-trimmed.</td>
+      </tr>
+      <tr>
+          <td><code>caption</code></td>
+          <td>string</td>
+          <td>Optional descriptive context surrounding the element. Deep XML Escaped.</td>
+      </tr>
+      <tr>
+          <td><code>geo_location</code></td>
+          <td>string</td>
+          <td>Optional location reference (e.g., "Kinshasa, Democratic Republic of the Congo").</td>
+      </tr>
+      <tr>
+          <td><code>license</code></td>
+          <td>string</td>
+          <td>Optional absolute URL containing intellectual copyright terms or usage badges.</td>
+      </tr>
+  </tbody>
+</table>
+
+### SitemapVideo
+
+<table>
+  <thead>
+      <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>thumbnail_loc</code></td>
+          <td>string</td>
+          <td><strong>Required.</strong> The absolute URL targeting the source image asset.</td>
+      </tr>
+      <tr>
+          <td><code>title</code></td>
+          <td>string</td>
+          <td><strong>Required.</strong> The descriptive headline of the video asset. Escaped.</td>
+      </tr>
+      <tr>
+          <td><code>description</code></td>
+          <td>string</td>
+          <td><strong>Required.</strong> Summary text representing the video topic. Max 2048 chars.</td>
+      </tr>
+      <tr>
+          <td><code>publication_date</code></td>
+          <td>Date | string</td>
+          <td><strong>Required.</strong> Publication date object or raw formatted ISO string.</td>
+      </tr>
+      <tr>
+          <td><code>content_loc</code></td>
+          <td>string</td>
+          <td>Optional absolute URL targeting the raw video media stream container.</td>
+      </tr>
+      <tr>
+          <td><code>player_loc</code></td>
+          <td>string</td>
+          <td>Optional absolute URL linking out to an embeddable video player frame.</td>
+      </tr>
+      <tr>
+          <td><code>duration</code></td>
+          <td>number</td>
+          <td>Optional length in seconds. Must be an integer bounded between 0 and 28800.</td>
+      </tr>
+      <tr>
+          <td><code>view_count</code></td>
+          <td>number</td>
+          <td>Optional overall hit counter. Negative values strictly prohibited.</td>
+      </tr>
+      <tr>
+          <td><code>live</code></td>
+          <td>'yes' | 'no'</td>
+          <td>Optional switch triggering immediate Google SERP LIVE badges.</td>
+      </tr>
+  </tbody>
+</table>
+
 ## Technical Implementation
+
+### Strict Video Statistical Enforcement (v1.1.3)
+Google's ingestion schema specifies rigid rules for video engagement parameters. Providing decimals or numbers outside structural limits can invalidate the entire sitemap file inside the Google Search Console.
+
+- **Range Locking**: The generator enforces that any provided `duration` fits within a strict `0` to `28,800` seconds bracket (up to 8 hours). Breaking this threshold or inputting negative values immediately throws an descriptive runtime exception.
+
+- **Decimal Truncation**: Both `duration` and `view_count` properties undergo automated conversion into integers using deterministic mathematical grounding (`Math.floor`). This allows systems to relay float-heavy numbers straight from analytics stores safely.
 
 ### Image Accessibility & E-commerce Protection
 Large e-commerce platform backends or multi-vendor platforms frequently inject messy string data from user-generated fields—such as alternative text filled with raw spaces (`"   "`) or unescaped description metadata containing special HTML entities (`&`, `<`, `>`). To achieve strict alignment with Googlebot accessibility schemas without risking layout parsing crashes, the engine implements a two-tier architectural protective filter in **v1.1.2**:
