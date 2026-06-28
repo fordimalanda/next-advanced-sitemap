@@ -33,6 +33,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+
 # IDE / Éditeurs
 .vscode/*
 !.vscode/extensions.json
@@ -46,3 +47,5 @@ Thumbs.db
 
 # Fichiers temporaires de Next.js (si vous créez un dossier 'example' pour tester)
 .next/
+
+dist/
