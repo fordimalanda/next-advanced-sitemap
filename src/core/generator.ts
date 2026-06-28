@@ -48,7 +48,7 @@ function sanitizeAndValidateUrl(rawUrl: string, context: string): string {
 
 /**
  * Génère le flux XML complet du sitemap incluant les extensions Images, Vidéos, News et Hreflang.
- * v1.1.3 : Validation stricte des statistiques vidéo (duration entre 0-28800s & view_count >= 0)
+ * v1.1.4 : Prise en charge et validation stricte des restrictions pays (ISO 3166) et plateformes (web, mobile, tv)
  */
 export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {}): string {
   const now = new Date().toISOString();
@@ -128,7 +128,7 @@ export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {
       }
     }
 
-    // Extension Vidéos - v1.1.3 sécurisée
+    // Extension Vidéos
     if (entry.videos?.length) {
       for (const vid of entry.videos) {
         const cleanThumbLoc = sanitizeAndValidateUrl(vid.thumbnail_loc, 'video thumbnail');
@@ -148,7 +148,6 @@ export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {
           xml += `      <video:publication_date>${vDate}</video:publication_date>\n`;
         }
 
-        // ✨ Validation et Sérialisation de la durée (0 - 28800s)
         if (vid.duration !== undefined) {
           const finalDuration = Math.floor(vid.duration);
           if (finalDuration < 0 || finalDuration > 28800) {
@@ -159,7 +158,6 @@ export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {
           xml += `      <video:duration>${finalDuration}</video:duration>\n`;
         }
 
-        // ✨ Validation et Sérialisation du nombre de vues (>= 0)
         if (vid.view_count !== undefined) {
           const finalViewCount = Math.floor(vid.view_count);
           if (finalViewCount < 0) {
@@ -172,6 +170,49 @@ export function generateXml(entries: SitemapEntry[], options: SitemapOptions = {
 
         if (vid.live) {
           xml += `      <video:live>${vid.live}</video:live>\n`;
+        }
+
+        // ✨ Validation et Sérialisation des Restrictions Pays (v1.1.4)
+        if (vid.restriction) {
+          if (!vid.restriction.countries || vid.restriction.countries.length === 0) {
+            throw new Error(
+              `[next-advanced-sitemap] Invalid video restriction: countries array cannot be empty.`
+            );
+          }
+
+          const cleanCountries = vid.restriction.countries.map(country => {
+            const code = country.trim().toUpperCase();
+            if (code.length < 2 || code.length > 3) {
+              throw new Error(
+                `[next-advanced-sitemap] Invalid ISO country code detected: "${country}". Must be a valid ISO 3166 code.`
+              );
+            }
+            return code;
+          });
+
+          const countriesStr = cleanCountries.join(' ');
+          xml += `      <video:restriction relationship="${vid.restriction.relationship}">${countriesStr}</video:restriction>\n`;
+        }
+
+        // ✨ Validation et Sérialisation des Plateformes (v1.1.4)
+        if (vid.platform) {
+          if (!vid.platform.platforms || vid.platform.platforms.length === 0) {
+            throw new Error(
+              `[next-advanced-sitemap] Invalid video platform: platforms array cannot be empty.`
+            );
+          }
+
+          const validPlatforms = ['web', 'mobile', 'tv'];
+          for (const p of vid.platform.platforms) {
+            if (!validPlatforms.includes(p)) {
+              throw new Error(
+                `[next-advanced-sitemap] Invalid platform type: "${p}". Allowed values are 'web', 'mobile', or 'tv'.`
+              );
+            }
+          }
+
+          const platformsStr = vid.platform.platforms.join(' ');
+          xml += `      <video:platform relationship="${vid.platform.relationship}">${platformsStr}</video:platform>\n`;
         }
 
         xml += `    </video:video>\n`;
