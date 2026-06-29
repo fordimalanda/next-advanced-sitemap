@@ -65,6 +65,15 @@ export interface VideoPlatform {
   platforms: ('web' | 'mobile' | 'tv')[];
 }
 
+export interface VideoPrice {
+  /** Valeur numérique du prix (ex: 9.99) */
+  value: number;
+  /** Code de devise ISO 4217 à 3 lettres (ex: 'USD', 'EUR', 'CDF') */
+  currency: string;
+  /** Optionnel : Type de transaction, soit 'rent' (location) ou 'own' (achat) */
+  type?: 'rent' | 'own';
+}
+
 /**
  * Interface pour les vidéos dans le sitemap
  * @see https://developers.google.com/search/docs/crawling-indexing/sitemaps/video-sitemaps
@@ -93,6 +102,11 @@ export interface SitemapVideo {
    * @see https://developers.google.com/search/docs/crawling-indexing/sitemaps/video-sitemaps
    */
   requires_subscription?: boolean | 'yes' | 'no';
+  /**
+   * v1.1.6 : Tarification de la vidéo pour l'achat ou la location (VOD).
+   * @see https://developers.google.com/search/docs/crawling-indexing/sitemaps/video-sitemaps
+   */
+  price?: VideoPrice;
 }
 
 /**
