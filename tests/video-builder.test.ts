@@ -159,4 +159,64 @@ describe('Video Builder Integration Tests', () => {
       );
     });
   });
+
+  // =========================================================================
+  // v1.1.7 - category & tags
+  // =========================================================================
+  describe('buildVideoXml - v1.1.7 (category & tags)', () => {
+    it('should correctly render escaped category and tags array', () => {
+      const videos: SitemapEntry['videos'] = [
+        {
+          ...baseVideo,
+          category: '  Next.js & Architecture  ',
+          tags: ['typescript', 'seo', ' web development ']
+        }
+      ];
+
+      const xml = buildVideoXml(videos);
+      expect(xml).toContain('<video:category>Next.js &amp; Architecture</video:category>');
+      expect(xml).toContain('<video:tag>typescript</video:tag>');
+      expect(xml).toContain('<video:tag>seo</video:tag>');
+      expect(xml).toContain('<video:tag>web development</video:tag>');
+    });
+
+    it('should throw an error if category exceeds 256 characters', () => {
+      const videos: SitemapEntry['videos'] = [
+        {
+          ...baseVideo,
+          category: 'a'.repeat(257)
+        }
+      ];
+
+      expect(() => buildVideoXml(videos)).toThrowError(
+        '[next-advanced-sitemap] Invalid video category length: 257. Maximum allowed is 256 characters.'
+      );
+    });
+
+    it('should throw an error if tags array contains more than 32 elements', () => {
+      const videos: SitemapEntry['videos'] = [
+        {
+          ...baseVideo,
+          tags: Array(33).fill('tag')
+        }
+      ];
+
+      expect(() => buildVideoXml(videos)).toThrowError(
+        '[next-advanced-sitemap] Invalid video tags count: 33. A video can have a maximum of 32 tags.'
+      );
+    });
+
+    it('should throw an error if an empty tag is detected after trimming', () => {
+      const videos: SitemapEntry['videos'] = [
+        {
+          ...baseVideo,
+          tags: ['valid-tag', '   ', 'another-one']
+        }
+      ];
+
+      expect(() => buildVideoXml(videos)).toThrowError(
+        '[next-advanced-sitemap] Invalid video tag detected: tag cannot be empty or just whitespaces.'
+      );
+    });
+  });
 });

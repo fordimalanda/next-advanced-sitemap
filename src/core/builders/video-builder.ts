@@ -145,6 +145,41 @@ export function buildVideoXml(videos: SitemapEntry['videos']): string {
       xml += priceXml;
     }
 
+    // ✨ Validation et Sérialisation de la Catégorie (v1.1.7)
+    if (vid.category !== undefined) {
+      const cleanCategory = vid.category.trim();
+      if (!cleanCategory) {
+        throw new Error(
+          `[next-advanced-sitemap] Invalid video category: category cannot be empty or just whitespaces.`
+        );
+      }
+      if (cleanCategory.length > 256) {
+        throw new Error(
+          `[next-advanced-sitemap] Invalid video category length: ${cleanCategory.length}. Maximum allowed is 256 characters.`
+        );
+      }
+      xml += `      <video:category>${escapeXml(cleanCategory)}</video:category>\n`;
+    }
+
+    // ✨ Validation et Sérialisation des Tags (v1.1.7)
+    if (vid.tags) {
+      if (vid.tags.length > 32) {
+        throw new Error(
+          `[next-advanced-sitemap] Invalid video tags count: ${vid.tags.length}. A video can have a maximum of 32 tags.`
+        );
+      }
+
+      for (const tag of vid.tags) {
+        const cleanTag = tag.trim();
+        if (!cleanTag) {
+          throw new Error(
+            `[next-advanced-sitemap] Invalid video tag detected: tag cannot be empty or just whitespaces.`
+          );
+        }
+        xml += `      <video:tag>${escapeXml(cleanTag)}</video:tag>\n`;
+      }
+    }
+
     xml += `    </video:video>\n`;
   }
   
