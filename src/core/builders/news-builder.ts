@@ -19,6 +19,38 @@ export function buildNewsXml(news: SitemapEntry['news']): string {
   xml += `      </news:publication>\n`;
   xml += `      <news:publication_date>${nDate}</news:publication_date>\n`;
   xml += `      <news:title>${escapeXml(news.title)}</news:title>\n`;
+
+  // ✨ Validation et Sérialisation des Stock Tickers (v1.1.8)
+  if (news.stock_tickers) {
+    if (!Array.isArray(news.stock_tickers)) {
+      throw new Error(
+        `[next-advanced-sitemap] Invalid news stock_tickers: property must be an array of strings.`
+      );
+    }
+
+    const validatedTickers = news.stock_tickers
+      .map(ticker => {
+        const cleanTicker = ticker.trim();
+        if (!cleanTicker) {
+          throw new Error(
+            `[next-advanced-sitemap] Invalid stock ticker detected: ticker element cannot be empty or just whitespaces.`
+          );
+        }
+        if (!cleanTicker.includes(':')) {
+          throw new Error(
+            `[next-advanced-sitemap] Invalid stock ticker format: "${cleanTicker}". Expected "EXCHANGE:TICKER" format (e.g., "NASDAQ:AAPL").`
+          );
+        }
+        return cleanTicker;
+      });
+
+    if (validatedTickers.length > 0) {
+      // Google demande une liste séparée par des virgules (sans espaces superflus)
+      const tickersString = validatedTickers.join(',');
+      xml += `      <news:stock_tickers>${escapeXml(tickersString)}</news:stock_tickers>\n`;
+    }
+  }
+
   xml += `    </news:news>\n`;
   
   return xml;
