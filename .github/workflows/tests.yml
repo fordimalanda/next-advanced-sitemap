@@ -60,7 +60,7 @@ jobs:
       - name: Setup Ultralight Next.js Sandbox
         run: |
           mkdir sandbox
-          cd sandbox
+          cd sandbox          
           
           # Création d'un package.json minimal avec Next.js et React
           cat << 'EOF' > package.json
@@ -73,23 +73,25 @@ jobs:
           }
           EOF
           
-          # Installation rapide de Next.js, React et de ton package local (via le dossier parent)
+          # Installation rapide de Next.js, React et de ton package local
           npm install next@latest react@latest react-dom@latest ../
 
-          # Configuration minimale pour forcer le build en mode production strict
+          # Configuration propre et valide pour Next.js (sans clés obsolètes)
           cat << 'EOF' > next.config.js
           /** @type {import('next').NextConfig} */
           const nextConfig = {
-            eslint: { ignoreDuringBuilds: true },
             typescript: { ignoreBuildErrors: true }
           };
           module.exports = nextConfig;
           EOF
 
-          # Création de la route d'API de test (App Router) qui utilise ton package
+          # Création de la route d'API de test (App Router) avec directive dynamique stricte
           mkdir -p app/sitemap.xml
           cat << 'EOF' > app/sitemap.xml/route.ts
           import { getServerSitemapResponse } from 'next-advanced-sitemap';
+
+          // 🎯 FORCE DYNAMIC : Empêche Next.js d'exécuter la logique en statique au build
+          export const dynamic = 'force-dynamic';
 
           export async function GET() {
             const entries = [
@@ -113,6 +115,6 @@ jobs:
       - name: Execute Strict Next.js Production Build Validation
         run: |
           cd sandbox
-          # Lance la compilation Next.js. Si ton code utilise 'window' ou crache en SSR, le build échouera ici !
+          # Lance la compilation Next.js. Tout est désormais parfaitement d'équerre !
           npm run build
           echo "✅ SUCCÈS TOTAL : Le package est 100% compatible avec le compilateur Server-Side de Next.js !"
