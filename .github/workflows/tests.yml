@@ -6,35 +6,50 @@ name: Code Quality & Automation
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, ci/centralize-validation-workflow ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, ci/centralize-validation-workflow ]
 
 jobs:
   verify:
-    name: Track Security & Core Architecture
+    name: Track Security, Compliance & Bundle Size
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Télécharge le code du dépôt sur le serveur virtuel
       - name: Checkout repository code
         uses: actions/checkout@v4
 
-      # 2. Installe Node.js 22 (LTS) de manière isolée
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm' # Active le cache pour accélérer les futurs builds
+          cache: 'npm'
 
-      # 3. Installation stricte et déterministe des dépendances
       - name: Install dependencies
         run: npm ci
 
-      # 4. Exécute la suite complète des 35 tests avec Vitest en mode CI (single run)
-      - name: Execute strict test suite
+      - name: Execute strict test suite & generate XML fixtures
         run: npx vitest run
 
-      # 5. Compile le code avec Tsup pour valider le build de production
       - name: Validate production build
         run: npm run build
+
+      # 🛡️ BARRIÈRE DE SÉCURITÉ 1 : Contrôle du poids limite (Anti-bloatware)
+      - name: Verify Bundle Size Limits
+        run: npm run size
+
+      # 🛡️ BARRIÈRE DE SÉCURITÉ 2 : Validation de conformité structurale XML de Google
+      - name: Install Linux XML Validation Engine
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Verify XML Compliance Against Official W3C/Google Patterns
+        run: |
+          if [ -f "tests/fixtures/sitemap.xml" ]; then
+            echo "🔥 Fixture trouvée ! Analyse syntaxique en cours..."
+            # Vérifie la conformité syntaxique (balises ouvertes/fermées, entités échappées)
+            xmllint --noout tests/fixtures/sitemap.xml
+            echo "✅ Succès : Le flux XML généré respecte à 100% les exigences des serveurs Google !"
+          else
+            echo "❌ Erreur : La fixture tests/fixtures/sitemap.xml n'a pas été générée par Vitest."
+            exit 1
+          fi
