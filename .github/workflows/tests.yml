@@ -56,12 +56,20 @@ jobs:
             exit 1
           fi
 
-      # 🛡️ BARRIÈRE DE SÉCURITÉ 3 : Test de build SSR réel dans une Sandbox Next.js App Router
+      # 🛡️ BARRIÈRE DE SÉCURITÉ 3 : Le Gardien de l'API (Conformité de la résolution des types ESM/CJS)
+      - name: Run Strict Type Integrity Checks (Are the Types Wrong?)
+        run: |
+          echo "Analyse des fichiers de déclaration de types générés..."
+          # Exécute attw sur le package pour vérifier que les définitions .d.ts 
+          # sont résolues correctement sous toutes les configurations de moduleResolution.
+          npx @arethetypeswrong/cli --pack .
+          echo "✅ PARFAIT : La matrice de types exportée est 100% valide et interopérable !"
+
+      # 🛡️ BARRIÈRE DE SÉCURITÉ 4 : Test de build SSR réel dans une Sandbox Next.js App Router
       - name: Setup Ultralight Next.js Sandbox
         run: |
           mkdir sandbox
-          cd sandbox          
-          
+          cd sandbox                    
           # Création d'un package.json minimal avec Next.js et React
           cat << 'EOF' > package.json
           {
@@ -73,7 +81,7 @@ jobs:
           }
           EOF
           
-          # Installation de Next 16 latest avec ses définitions de types obligatoires
+          # Installation de Next 16 avec ses définitions de types obligatoires
           npm install --no-package-lock next@latest react@latest react-dom@latest @types/react@latest @types/node@latest ../
 
           # Configuration pour forcer Next.js à ignorer les alertes non critiques
@@ -141,7 +149,6 @@ jobs:
         run: |
           set -euxo pipefail
           cd sandbox
-
           echo "=== ENV INFO ==="
           node -v
           npm -v
