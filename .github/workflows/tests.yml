@@ -73,8 +73,8 @@ jobs:
           }
           EOF
           
-          # 🎯 STABILISATION : On cible Next 15 pour isoler les caprices de Turbopack Next 16
-          npm install --no-package-lock next@15 react@19 react-dom@19 ../
+          # 🎯 CORRECTION COMPATIBILITÉ & TYPES : Retour sur Next 16 latest + installation des @types indispensables
+          npm install --no-package-lock next@latest react@latest react-dom@latest @types/react@latest @types/node@latest ../
 
           # Configuration pour forcer Next.js à ignorer les alertes non critiques
           cat << 'EOF' > next.config.js
@@ -132,14 +132,29 @@ jobs:
           }
           EOF
 
-      # 🎯 INSTRUMENTATION : Tracing complet et mode verbeux activé
+      # 🎯 EXPERT DIAGNOSTIC : Environnement hyper-strict de capture des logs en cas de pépin
       - name: Execute Strict Next.js Production Build Validation
         env:
           NEXT_TELEMETRY_DISABLED: 1
           CI: "true"
           NODE_ENV: production
         run: |
-          set -x
+          set -euxo pipefail
           cd sandbox
-          # Utilisation directe du binaire local avec le flag expérimental/debug si disponible
-          npx next build
+
+          echo "=== ENV INFO ==="
+          node -v
+          npm -v
+          
+          echo "=== PACKAGES INSTALLED ==="
+          npm ls next react react-dom next-advanced-sitemap || true
+
+          echo "=== STARTING BUILD ==="
+          npx next build 2>&1 | tee build.log
+
+          echo "Exit code: ${PIPESTATUS[0]}"
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "===== CRITICAL BUILD LOG FAILURE ====="
+            cat build.log
+            exit 1
+          fi
