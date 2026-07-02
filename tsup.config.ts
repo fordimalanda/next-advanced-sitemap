@@ -8,7 +8,10 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['cjs', 'esm'],
-  dts: true,
+  // Génère des fichiers de types distincts (.d.ts pour ESM et .d.cts pour CJS)
+  dts: {
+    resolve: true,
+  },
   splitting: false,
   sourcemap: true,
   clean: true,
