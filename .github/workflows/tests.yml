@@ -66,10 +66,13 @@ jobs:
       # 🛡️ BARRIÈRE DE SÉCURITÉ 4 : Test de build SSR réel dans une Sandbox Next.js App Router
       - name: Setup Ultralight Next.js Sandbox
         run: |
+          # 1. On génère une archive propre de notre package (ex: next-advanced-sitemap-1.1.8.tgz)
+          NPM_TARBALL=$(npm pack)
+          mv "$NPM_TARBALL" package-local.tgz          
           mkdir sandbox
-          cd sandbox                    
+          cd sandbox                              
           
-          # Création d'un package.json minimal avec Next.js et React
+          # 2. Création du package.json de la sandbox
           cat << 'EOF' > package.json
           {
             "name": "next-sitemap-sandbox",
@@ -80,10 +83,10 @@ jobs:
           }
           EOF          
           
-          # Installation de Next 16 avec ses définitions de types obligatoires
-          npm install --no-package-lock next@latest react@latest react-dom@latest @types/react@latest @types/node@latest ../
+          # 3. Installation isolée à partir de l'archive tarball locale
+          npm install --no-package-lock next@latest react@latest react-dom@latest @types/react@latest @types/node@latest ../package-local.tgz
 
-          # Configuration pour forcer Next.js à ignorer les alertes non critiques
+          # Configuration Turbopack / Next.js
           cat << 'EOF' > next.config.js
           /** @type {import('next').NextConfig} */
           const nextConfig = {
