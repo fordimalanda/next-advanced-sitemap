@@ -172,3 +172,14 @@ export interface SitemapOptions {
    */
   maxAge?: number; // Option ajoutée pour la v1.0.9
 }
+
+/**
+ * Interface pour une entrée individuelle dans un index de sitemaps
+ * @see https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps
+ */
+export interface SitemapIndexEntry {
+  /** URL absolue du sous-sitemap (ex: 'https://fomadev.com/sitemap-vidéos.xml') */
+  loc: string;
+  /** Date de la dernière modification du sous-sitemap */
+  lastmod?: string | Date;
+}
