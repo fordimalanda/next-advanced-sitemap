@@ -167,14 +167,21 @@ jobs:
           NODE_ENV: production
         run: |
           set -euxo pipefail
-          cd sandbox          
+          cd sandbox                    
           
           echo "=== ENV INFO ==="
           node -v
-          npm -v          
+          npm -v                    
           
-          echo "=== PACKAGES INSTALLED ==="
-          npm ls next react react-dom next-advanced-sitemap --no-workspaces || true
+          # 🎯 REMPLACEMENT DE NPM LS : Évite le bug de parsing de l'arbre npm 10
+          echo "=== NODE_MODULES ==="
+          ls -la node_modules || true
+
+          echo "=== PACKAGE ==="
+          ls -la node_modules/next-advanced-sitemap || true
+
+          echo "=== PACKAGE.JSON INTERNE ==="
+          cat node_modules/next-advanced-sitemap/package.json || true
 
           echo "=== STARTING BUILD ==="
           npx next build 2>&1 | tee build.log
