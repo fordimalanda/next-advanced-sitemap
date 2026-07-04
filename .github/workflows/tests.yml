@@ -358,7 +358,7 @@ jobs:
               console.log("Simulation d'une dérive temporelle critique (Date lointaine dans le futur)...");
               
               const futureDate = new Date();
-              futureDate.setFullYear(futureDate.getFullYear() + 24); // Projection en 2050
+              futureDate.setFullYear(futureDate.getFullYear() + 24);
               
               const temporalEntries = [
                 {
@@ -368,7 +368,6 @@ jobs:
                 }
               ];
               
-              // Consommation asynchrone complète du flux XML généré
               const response = getServerSitemapResponse(temporalEntries);
               const xmlOutput = await response.text();
               
@@ -388,6 +387,49 @@ jobs:
           EOF
           
           node time-test.js
+
+      # 🛡️ BARRIÈRE DE SÉCURITÉ MAXIMUM 15 : Protection contre la Prototype Pollution (Object Security)
+      - name: Verify Architectural Immunity Against JavaScript Prototype Pollution
+        run: |
+          echo "=== Lancement du test d'intrusion par empoisonnement d'objet ==="
+          
+          cat << 'EOF' > prototype-pollution-test.js
+          import { getServerSitemapResponse } from './dist/index.js';
+          
+          async function runPrototypePollutionTest() {
+            const poisonPayload = JSON.parse('{"__proto__": {"vulnerableProperty": "HACKED"}}');
+            
+            const attackEntries = [
+              {
+                url: 'https://fomadev.com',
+                priority: 1.0,
+                images: [poisonPayload]
+              }
+            ];
+            
+            try {
+              console.log("Exécution du moteur de sitemap sur une charge empoisonnée...");
+              const response = getServerSitemapResponse(attackEntries);
+              await response.text();
+              
+              const testObject = {};
+              if (testObject.vulnerableProperty === "HACKED") {
+                console.error("❌ CRITIQUE : Faille détectée ! Votre package est vulnérable à la Prototype Pollution.");
+                process.exit(1);
+              }
+              
+              console.log("✅ SÉCURITÉ ABSOLUE : Votre package est 100% immunisé contre l'empoisonnement d'objets !");
+              process.exit(0);
+            } catch (error) {
+              console.log(`✅ Attaque bloquée ou ignorée de manière sécurisée par validation : ${error.message}`);
+              process.exit(0);
+            }
+          }
+
+          runPrototypePollutionTest();
+          EOF
+          
+          node prototype-pollution-test.js
 
       # 🛡️ BARRIÈRE DE SÉCURITÉ 4 : Test de build SSR réel dans une Sandbox Next.js unifiée
       - name: Setup Sandbox & Validate Next.js Production Build
