@@ -71,7 +71,6 @@ jobs:
           import { getServerSitemapResponse, getServerSitemapIndexResponse } from './dist/index.js';
           
           async function runTests() {
-            // 💡 URLs nettoyées de tout formatage Markdown parasite
             const invalidLivePayload = [{
               url: 'https://fomadev.com',
               video: {
@@ -169,6 +168,50 @@ jobs:
           EOF
           
           node --expose-gc heap-test.js
+
+      # 🛡️ BARRIÈRE DE SÉCURITÉ 3.9 : Validation d'idempotence absolue et d'immutabilité structurelle
+      - name: Verify Strict Idempotency & Structural Immutability
+        run: |
+          echo "=== Lancement du test de cohérence déterministe v1.2.0 ==="
+          
+          cat << 'EOF' > idempotency-test.js
+          import { getServerSitemapResponse } from './dist/index.js';
+          
+          async function runIdempotencyTest() {
+            // Espace ajouté exprès pour tester le trim() sans altération de la référence d'origine
+            const rawEntries = [
+              { url: ' https://fomadev.com ', priority: 0.8 },
+              { url: 'https://fomadev.com/analytics', priority: 1.0 }
+            ];
+            
+            // 1. Première génération
+            const resOne = getServerSitemapResponse(rawEntries, { sortByPriority: true });
+            const xmlOne = await resOne.text();
+            
+            // 2. Deuxième génération immédiate avec les mêmes données d'entrée
+            const resTwo = getServerSitemapResponse(rawEntries, { sortByPriority: true });
+            const xmlTwo = await resTwo.text();
+            
+            // 3. Assertion d'idempotence au bit près sur les chaînes de texte extraites
+            if (xmlOne !== xmlTwo) {
+              console.error("❌ FAILLE D'IDEMPOTENCE : Deux exécutions identiques produisent des résultats XML différents !");
+              process.exit(1);
+            }
+            
+            // 4. Assertion d'immutabilité : les fonctions internes ne doivent en aucun cas avoir nettoyé directement l'objet source de l'utilisateur
+            if (rawEntries[0].url !== ' https://fomadev.com ') {
+              console.error("❌ FAILLE D'IMMUTABILITÉ : Votre package a modifié les données d'entrée de l'utilisateur par référence !");
+              process.exit(1);
+            }
+            
+            console.log("✅ PARFAIT : Votre moteur est 100% pur, déterministe et respecte l'immutabilité des références !");
+            process.exit(0);
+          }
+
+          runIdempotencyTest();
+          EOF
+          
+          node idempotency-test.js
 
       # 🛡️ BARRIÈRE DE SÉCURITÉ 4 : Test de build SSR réel dans une Sandbox Next.js unifiée
       - name: Setup Sandbox & Validate Next.js Production Build
