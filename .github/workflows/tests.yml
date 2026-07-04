@@ -257,6 +257,9 @@ jobs:
           import { createRequire } from 'module';
           const require = createRequire(import.meta.url);
 
+          // On extrait la vraie méthode exit de Node pour l'environnement de test avant isolation
+          const nativeExit = process.exit.bind(process);
+
           // Simulation d'une isolation stricte de l'Edge Runtime : sabotage des APIs Node.js globales/locales
           const forbiddenModules = ['fs', 'path', 'child_process', 'os', 'crypto', 'http', 'https'];
           forbiddenModules.forEach(mod => {
@@ -285,13 +288,13 @@ jobs:
               
               if (xml.includes('<urlset')) {
                 console.log("✅ COMPATIBILITÉ EDGE VALIDÉE : Le code s'exécute parfaitement avec des primitives Web pures !");
-                process.exit(0);
+                nativeExit(0);
               } else {
                 throw new Error("Le flux XML généré est invalide.");
               }
             } catch (error) {
               console.error(error.message);
-              process.exit(1);
+              nativeExit(1);
             }
           }
           
