@@ -3,14 +3,15 @@
 [![License: FPL](https://img.shields.io/badge/License-FPL-orange.svg)](LICENSE)
 ![CI Status](https://github.com/fomadev/next-advanced-sitemap/actions/workflows/tests.yml/badge.svg)
 
-A robust and type-safe sitemap generator for Next.js (App Router). This library extends standard sitemap capabilities by providing native support for Google-specific metadata including Images, Videos, News, and Internationalization (Hreflang).
+A robust and type-safe sitemap generator for Next.js (App Router). This library extends standard sitemap capabilities by providing native support for Google-specific metadata including Images, Videos, News, Internationalization (Hreflang), and large-scale Sitemap Index structures.
 
 ## Overview
 
-While Next.js provides a built-in `MetadataRoute.Sitemap` utility, it currently lacks support for advanced SEO attributes required by high-performance web applications. `next-advanced-sitemap` bridges this gap, allowing developers to programmatically generate complex XML sitemaps that comply with Google's extended schemas.
+While Next.js provides a built-in `MetadataRoute.Sitemap` utility, it currently lacks support for advanced SEO attributes required by high-performance web applications. `next-advanced-sitemap` bridges this gap, allowing developers to programmatically generate complex XML sitemaps and indexes that comply with Google's extended schemas.
 
 ## Features
 
+- **Native Sitemap Indexing Architecture (v1.2.0)**: Advanced support for sitemap index grouping (`getServerSitemapIndexResponse`). Allows seamless scaling by linking multiple sub-sitemaps (e.g., `sitemap-0.xml`, `sitemap-products.xml`) under a centralized endpoint to bypass Google's 50,000 URLs strict limitation.
 - **Cross-Field Semantic Validation (v1.1.9)**: Native cross-field validation engine that intercepts logical data contradictions (e.g., Live streams with static durations, subscriptions conflicts, or expired news) before writing the XML stream. Guarantees a flawless 100% compliance score in Google Search Console.
 - **Financial Google News Syndication (v1.1.8)**: Native support for `<news:stock_tickers>` tags, mapping general press articles directly to active global stock market boards.
 - **Video Semantic Classification & Long-Tail SEO (v1.1.7)**: Support for `<video:category>` and multiple `<video:tag>` elements to deeply contextualize video content and map assets to highly targeted niche queries.
@@ -42,7 +43,9 @@ npm install next-advanced-sitemap
 
 ## Usage
 
-To implement an advanced sitemap in the Next.js App Router, create a Route Handler at `app/sitemap.xml/route.ts`.
+### 1. Generating a Sub-Sitemap (Standard XML)
+
+To implement a rich structural sitemap in the Next.js App Router, create a Route Handler at `app/sitemap-records.xml/route.ts`.
 
 ```typescript
 import { getServerSitemapResponse, SitemapEntry } from 'next-advanced-sitemap';
@@ -70,22 +73,13 @@ export async function GET() {
           publication_date: new Date(),
           duration: 7200, 
           view_count: 25000,
-          // v1.1.7: Semantic Topical Classification & Long-Tail Tags
-          category: '  Education & Technology  ', // Auto-trimmed and XML-escaped
-          tags: ['nextjs', 'typescript', ' advanced seo '], // Limited to 32 tags max
-          // v1.1.6: Commercial VOD Pricing Structure (Auto ISO 4217 & decimal formatting)
+          category: 'Education & Technology',
+          tags: ['nextjs', 'typescript', 'advanced seo'],
           price: { value: 19.99, currency: 'usd', type: 'own' }, 
-          // v1.1.5: Flexible Paywall Registration (Accepts boolean or strict 'yes' | 'no')
           requires_subscription: true,
-          // v1.1.4: Strict Geographic Filtering & Capitalization Sanitization
           restriction: {
             relationship: 'allow',
-            countries: ['cd', 'fr', 'us'] // Automatically sanitized into 'CD FR US'
-          },
-          // v1.1.4: Native Screen-Class Targeting Controls
-          platform: {
-            relationship: 'deny',
-            platforms: ['tv'] // Deny indexing out for Smart TV layouts
+            countries: ['cd', 'fr', 'us']
           }
         }
       ]
@@ -93,31 +87,16 @@ export async function GET() {
     {
       url: 'https://fomadev.com/news/fintech-drc-2026',
       priority: 0.85,
-      // v1.1.8: Google News Syndication Matrix with Market Stock Tickers
       news: {
         name: 'FomaDev Insights',
         language: 'fr',
-        publication_date: new Date(),
+        publication_date: new Date(), // Always dynamic to meet the strict 48h rule (v1.1.9)
         title: 'The Rise of FinTech Infrastructure in Central Africa',
-        stock_tickers: [' NYSE:BABA ', 'NASDAQ:AAPL'] // Auto-trimmed, validated & comma-separated
+        stock_tickers: ['NYSE:BABA', 'NASDAQ:AAPL']
       }
-    },
-    {
-      url: 'https://fomadev.com/products/tech-item',
-      priority: 0.8,
-      images: [
-        {
-          loc: 'https://fomadev.com/images/product.png',
-          title: '    Premium Wireless Keyboard    ', // v1.1.2: Auto-trimmed preventively
-          caption: 'Close-up shot of our custom mechanical keyboard layout with XML characters like & or <', // v1.1.2: Deep XML Escaping
-          geo_location: 'Kinshasa, Democratic Republic of the Congo', // v1.1.0 Local SEO
-          license: 'https://fomadev.com/terms/licensing' // v1.1.0 Badging
-        }
-      ]
     }
   ];
 
-  // Enable autoLastmod and sortByPriority (v1.0.8) to optimize crawl efficiency
   return getServerSitemapResponse(entries, { 
     autoLastmod: true,
     sortByPriority: true 
@@ -125,19 +104,49 @@ export async function GET() {
 }
 ```
 
+### 2. Generating a Master Sitemap Index (v1.2.0)
+
+When scaling up your application, group multiple sub-sitemaps dynamically. Create a Route Handler at `app/sitemap.xml/route.ts`.
+
+```typescript
+import { getServerSitemapIndexResponse, SitemapIndexEntry } from 'next-advanced-sitemap';
+
+export async function GET() {
+  const subSitemaps: SitemapIndexEntry[] = [
+    {
+      loc: 'https://fomadev.com/sitemap-records.xml',
+      lastmod: new Date() // Supports native JavaScript Date polymorphism
+    },
+    {
+      loc: 'https://fomadev.com/sitemap-products.xml',
+      lastmod: '2026-07-04T12:00:00.000Z'
+    }
+  ];
+
+  // Serves a structural <sitemapindex> with optimal CDN caching headers
+  return getServerSitemapIndexResponse(subSitemaps, {
+    maxAge: 3600 // Custom cache eviction lifespan (optional)
+  });
+}
+```
+
 ## API Reference
+
+### getServerSitemapIndexResponse(entries: SitemapIndexEntry[], options?: Pick<SitemapOptions, 'maxAge'>)
+
+**Introduced in v1.2.0**. Generates a Next.js `Response` instance wrapping a structural `<sitemapindex>` tree. Ideal for routing deep content clusters while maintaining custom Edge cache distributions.
 
 ### getServerSitemapResponse(entries: SitemapEntry[], options?: SitemapOptions)
 
 Generates a standard Next.js `Response` object with the correct `application/xml` content-type and optimized cache headers.
 
-### Options:
+### Options Matrix:
 
-* `autoLastmod` (boolean): If `true`, injects the current ISO date for any entry missing the `lastmod` property.
+* `autoLastmod` (boolean): If `true`, injects the current ISO date for any standard entry missing the `lastmod` property.
 
-* `sortByPriority` (boolean): If `true`, sorts the sitemap records in a descending sequence based on their priority level (`1.0` down to `0.0`) before writing the XML stream. Items without an explicit priority fall back safely to `0.5`.
+* `sortByPriority` (boolean): If `true`, sorts standard records in a descending sequence based on priority level (`1.0` down to `0.0`).
 
-* `maxAge` (number): (Optional) Maximum lifespan duration expressed in seconds. Transforms the HTTP communication layer payload to use a rigid `public, max-age=X, must-revalidate` schema.
+* `maxAge` (number): (Optional) Maximum lifespan duration expressed in seconds. Transforms the HTTP communication layer payload to use a rigid `public, max-age=X, must-revalidate` schema. Supported by both standard and index responses.
 
 ### SitemapEntry Object
 
