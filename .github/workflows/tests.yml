@@ -199,7 +199,7 @@ jobs:
               process.exit(1);
             }
             
-            console.log("✅ PARFAIT : Votre moteur est 100% pur, déterministe et respecte l'immutabilité des références !");
+            console.log("✅ PARFAIT : Votre moteur é pur, déterministe et respecte l'immutabilité des références !");
             process.exit(0);
           }
 
@@ -337,6 +337,45 @@ jobs:
           EOF
           
           node time-test.js
+
+      # 🛡️ BARRIÈRE DE CONFORMITÉ 16 : Validation croisée par fichiers de schémas officiels XSD (W3C Standard)
+      - name: Download and Validate Against Official Sitemaps.org XSD Schemas
+        run: |
+          echo "=== Téléchargement des schémas officiels de validation ==="
+          curl -s -o sitemap.xsd https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd
+          curl -s -o siteindex.xsd https://www.sitemaps.org/schemas/sitemap/0.9/siteindex.xsd
+          
+          echo "=== Lancement de la validation structurelle XSD (v1.2.2) ==="
+          cat << 'EOF' > xsd-test.js
+          import { getServerSitemapResponse, getServerSitemapIndexResponse } from './dist/index.js';
+          import fs from 'fs';
+
+          async function generateFiles() {
+            // 1. Génération d'un flux enfant standard et extraction textuelle de la Response
+            const childResponse = getServerSitemapResponse([{ url: 'https://fomadev.com', priority: 0.8 }]);
+            const childXml = await childResponse.text();
+            fs.writeFileSync('generated-child.xml', childXml);
+
+            # 2. Génération d'un flux d'index racine et extraction textuelle
+            const indexResponse = getServerSitemapIndexResponse([{ url: 'https://fomadev.com/sitemap-1.xml', lastmod: new Date() }]);
+            const indexXml = await indexResponse.text();
+            fs.writeFileSync('generated-index.xml', indexXml);
+
+            process.exit(0);
+          }
+          generateFiles();
+          EOF
+          
+          node xsd-test.js
+
+          echo "Vérification du fichier Enfant par rapport à sitemap.xsd..."
+          xmllint --schema sitemap.xsd generated-child.xml --noout
+          
+          echo "Vérification du fichier Index par rapport à siteindex.xsd..."
+          xmllint --schema siteindex.xsd generated-index.xml --noout
+
+          echo "✅ EXCELLENCE : Les flux générés par la v1.2.2 sont 100% alignés avec les règles strictes de Sitemaps.org !"
+          rm sitemap.xsd siteindex.xsd generated-child.xml generated-index.xml xsd-test.js
 
       # 🛡️ BARRIÈRE DE SÉCURITÉ 4 : Test de build SSR réel dans une Sandbox Next.js unifiée
       - name: Setup Sandbox & Validate Next.js Production Build
