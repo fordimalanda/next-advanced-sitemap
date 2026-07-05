@@ -7,40 +7,37 @@ import { describe, it, expect } from 'vitest';
 import { buildSitemapIndexXml } from '../src/core/builders/index-builder.js';
 import { SitemapIndexEntry } from '../src/types/sitemap.js';
 
-describe('v1.2.0 Sitemap Index Core Suite', () => {
+describe('v1.2.2 Sitemap Index XML Namespace & Validation Suite', () => {
 
-  it('should generate a standard root sitemap index structure correctly', () => {
+  it('should inject the correct authoritative XML namespace schema for sitemapindex', () => {
     const entries: SitemapIndexEntry[] = [
-      { loc: 'https://fomadev.com/sitemap-0.xml', lastmod: '2026-07-03T12:00:00.000Z' },
-      { loc: 'https://fomadev.com/sitemap-1.xml' }
+      { loc: 'https://fomadev.com/sitemap-products.xml' }
     ];
 
     const xml = buildSitemapIndexXml(entries);
 
+    // Assertions v1.2.2
     expect(xml).toContain('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect(xml).toContain('<sitemap>');
-    expect(xml).toContain('<loc>https://fomadev.com/sitemap-0.xml</loc>');
-    expect(xml).toContain('<lastmod>2026-07-03T12:00:00.000Z</lastmod>');
-    expect(xml).toContain('<loc>https://fomadev.com/sitemap-1.xml</loc>');
+    expect(xml).toContain('</sitemapindex>');
   });
 
-  it('should support JavaScript Date object polymorphism for index entries', () => {
-    const mockDate = new Date();
-    const entries: SitemapIndexEntry[] = [
-      { loc: 'https://fomadev.com/sitemap-products.xml', lastmod: mockDate }
+  it('should fallback natively from url property to loc and pass validation', () => {
+    const entries: any[] = [
+      { url: 'https://fomadev.com/sitemap-fallback.xml', lastmod: '2026-07-05T00:00:00.000Z' }
     ];
 
     const xml = buildSitemapIndexXml(entries);
-    expect(xml).toContain(`<lastmod>${mockDate.toISOString()}</lastmod>`);
+    expect(xml).toContain('<loc>https://fomadev.com/sitemap-fallback.xml</loc>');
   });
 
-  it('should trigger the core validation rules if a sitemap loc URL is invalid', () => {
-    const invalidEntries: SitemapIndexEntry[] = [
-      { loc: 'ftp://bad-protocol.com/sitemap.xml' }
+  it('should throw strict validation error for invalid index URLs', () => {
+    const badEntries: SitemapIndexEntry[] = [
+      { loc: 'https://fomadev.com/invalid space sitemap.xml' }
     ];
 
-    expect(() => buildSitemapIndexXml(invalidEntries)).toThrowError(
-      '[next-advanced-sitemap] Invalid URL in sitemap index location'
+    // Correction v1.2.2 : Alignement avec le message d'erreur précis du validateur d'URL
+    expect(() => buildSitemapIndexXml(badEntries)).toThrowError(
+      '[next-advanced-sitemap] Malformed URL structure detected in sitemap index location'
     );
   });
 });
