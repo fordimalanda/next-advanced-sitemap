@@ -11,6 +11,7 @@ While Next.js provides a built-in `MetadataRoute.Sitemap` utility, it currently 
 
 ## Features
 
+- **Universal XML Namespace Injection & Strict Index Guardrails (v1.2.2)**: Automated compliance matching that embeds standard canonical namespaces (`xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"`) inside root index configurations. Prevents parsing errors or validation dropouts across alternative search crawlers like Bing, Yandex, or DuckDuckGo while routing individual child locations through strict syntax URL engines.
 - **Native Sitemap Indexing Architecture (v1.2.0)**: Advanced support for sitemap index grouping (`getServerSitemapIndexResponse`). Allows seamless scaling by linking multiple sub-sitemaps (e.g., `sitemap-0.xml`, `sitemap-products.xml`) under a centralized endpoint to bypass Google's 50,000 URLs strict limitation.
 - **Cross-Field Semantic Validation (v1.1.9)**: Native cross-field validation engine that intercepts logical data contradictions (e.g., Live streams with static durations, subscriptions conflicts, or expired news) before writing the XML stream. Guarantees a flawless 100% compliance score in Google Search Console.
 - **Financial Google News Syndication (v1.1.8)**: Native support for `<news:stock_tickers>` tags, mapping general press articles directly to active global stock market boards.
@@ -336,6 +337,12 @@ Generates a standard Next.js `Response` object with the correct `application/xml
 </table>
 
 ## Technical Implementation
+
+### Explicit Index Namespace Ingestion & Cross-Engine Interoperability (v1.2.2)
+To secure discovery velocity across alternative crawlers (e.g., Bingbot) that reject unmapped root metadata structures, **v1.2.2** enforces strict compliance standards onto index generation trees:
+
+* **Authoritative Schema Delivery**: The generator automatically injects the structural `xmlns` URI schema into the core `<sitemapindex>` element. This prevents alternative parsers from treating the output as an unindexed plain document.
+* **Unified Normalization Layer**: Consolidates fault-tolerant property fallback mapping (recovering from `.url` variations seamlessly) and applies rigid validation patterns to intercept faulty localizations prior to production rendering.
 
 ### Native Sitemap Indexing Architecture & Edge Cache Alignment (v1.2.0)
 To comfortably scale applications past search engine structural thresholds (max 50,000 URLs or 50MB per single uncompressed file), **v1.2.0** introduces a high-performance orchestration layer dedicated to nested sitemap index tree structures (`<sitemapindex>`):
