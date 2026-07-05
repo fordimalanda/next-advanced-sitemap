@@ -2,11 +2,12 @@
 # * Licensed under FomaDev Public License.
 # * See LICENSE file in the project root for full license information.
 
-name: Publish Package to NPM Registry
+name: Automatic Production Release & NPM Publish
 
 on:
-  release:
-    types: [published] # Se déclenche uniquement quand tu publies une Release sur GitHub
+  push:
+    tags:
+      - 'v*' # Se déclenche automatiquement à chaque push de tag commençant par v (ex: v1.2.2)
 
 jobs:
   publish:
@@ -14,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     
     permissions:
-      contents: read
-      id-token: write
+      contents: write # Requis pour créer la release GitHub et y attacher le zip
+      id-token: write # Requis pour la publication NPM sécurisée
 
     steps:
       - name: Checkout source code
@@ -36,6 +37,27 @@ jobs:
       - name: Build production artifact
         run: npm run build
 
+      # ÉTAPE 1 : Archivage du dossier dist/ au format ZIP avec le bon nommage de version
+      - name: Create Production Distribution Artifact (ZIP)
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          echo "Version détectée : $TAG_VERSION"
+          zip -r "next-advanced-sitemap-${TAG_VERSION}-dist.zip" dist/
+          echo "ZIP_NAME=next-advanced-sitemap-${TAG_VERSION}-dist.zip" >> $GITHUB_ENV
+
+      # ÉTAPE 2 : Création de la Release GitHub automatique et envoi du ZIP
+      - name: Create GitHub Release & Upload Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: ${{ env.ZIP_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Jeton natif fourni par GitHub
+
+      # ÉTAPE 3 : Publication finale sur le registre NPM
       - name: Publish package to NPM
         run: npm publish
         env:
