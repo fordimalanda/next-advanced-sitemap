@@ -79,6 +79,7 @@ jobs:
           EOF
           
           node redos-test.js
+          rm redos-test.js
 
       # 🛡️ BARRIÈRE DE SÉCURITÉ : Protection contre la Prototype Pollution (Object Security)
       - name: Verify Architectural Immunity Against JavaScript Prototype Pollution
@@ -122,6 +123,7 @@ jobs:
           EOF
           
           node prototype-pollution-test.js
+          rm prototype-pollution-test.js
 
       # 🛡️ BARRIÈRE DE CYBERSÉCURITÉ : Protection contre les attaques par expansion XML (Billion Laughs)
       - name: Install Linux XML Engine for Security Tests
@@ -183,13 +185,12 @@ jobs:
             });
             
             console.log("✅ PARFAIT : Votre logique de gestion de cache est étanche et protège les infrastructures Cloud !");
-            rm cache-security-test.js
             process.exit(0);
           } catch (error) {
             console.error(`❌ FAILLE DE SÉCURITÉ CACHE : Risque majeur d'empoisonnement ou d'effondrement CDN : ${error.message}`);
-            rm cache-security-test.js
             process.exit(1);
           }
           EOF
           
           node cache-security-test.js
+          rm cache-security-test.js
