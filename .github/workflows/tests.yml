@@ -199,7 +199,7 @@ jobs:
               process.exit(1);
             }
             
-            console.log("✅ PARFAIT : Votre moteur é pur, déterministe et respecte l'immutabilité des références !");
+            console.log("✅ PARFAIT : Votre moteur est pur, déterministe et respecte l'immutabilité des références !");
             process.exit(0);
           }
 
@@ -356,7 +356,7 @@ jobs:
             const childXml = await childResponse.text();
             fs.writeFileSync('generated-child.xml', childXml);
 
-            # 2. Génération d'un flux d'index racine et extraction textuelle
+            // 2. Génération d'un flux d'index racine et extraction textuelle
             const indexResponse = getServerSitemapIndexResponse([{ url: 'https://fomadev.com/sitemap-1.xml', lastmod: new Date() }]);
             const indexXml = await indexResponse.text();
             fs.writeFileSync('generated-index.xml', indexXml);
