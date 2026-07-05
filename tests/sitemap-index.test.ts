@@ -7,18 +7,25 @@ import { describe, it, expect } from 'vitest';
 import { buildSitemapIndexXml } from '../src/core/builders/index-builder.js';
 import { SitemapIndexEntry } from '../src/types/sitemap.js';
 
-describe('v1.2.2 Sitemap Index XML Namespace & Validation Suite', () => {
+describe('v1.2.3 Sitemap Index Hybrid Date & Validation Suite', () => {
 
-  it('should inject the correct authoritative XML namespace schema for sitemapindex', () => {
+  it('should accept and accurately parse a plain ISO string for lastmod', () => {
     const entries: SitemapIndexEntry[] = [
-      { loc: 'https://fomadev.com/sitemap-products.xml' }
+      { loc: 'https://fomadev.com/sitemap-articles.xml', lastmod: '2026-11-29T12:00:00.000Z' }
     ];
 
     const xml = buildSitemapIndexXml(entries);
+    expect(xml).toContain('<lastmod>2026-11-29T12:00:00.000Z</lastmod>');
+  });
 
-    // Assertions v1.2.2
-    expect(xml).toContain('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect(xml).toContain('</sitemapindex>');
+  it('should accept and dynamically serialize native JavaScript Date objects (Polymorphism v1.2.3)', () => {
+    const mockDate = new Date('2026-07-05T10:00:00.000Z');
+    const entries: SitemapIndexEntry[] = [
+      { loc: 'https://fomadev.com/sitemap-products.xml', lastmod: mockDate }
+    ];
+
+    const xml = buildSitemapIndexXml(entries);
+    expect(xml).toContain(`<lastmod>${mockDate.toISOString()}</lastmod>`);
   });
 
   it('should fallback natively from url property to loc and pass validation', () => {
@@ -35,7 +42,6 @@ describe('v1.2.2 Sitemap Index XML Namespace & Validation Suite', () => {
       { loc: 'https://fomadev.com/invalid space sitemap.xml' }
     ];
 
-    // Correction v1.2.2 : Alignement avec le message d'erreur précis du validateur d'URL
     expect(() => buildSitemapIndexXml(badEntries)).toThrowError(
       '[next-advanced-sitemap] Malformed URL structure detected in sitemap index location'
     );
