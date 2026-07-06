@@ -67,7 +67,6 @@ export async function GET() {
     {
       url: 'https://fomadev.com/exclusive-movie',
       priority: 0.9,
-      // 💡 DX Resiliency (v1.2.1): Supports fallback mapping if you pass a single 'video' object instead of an array!
       videos: [
         {
           thumbnail_loc: 'https://fomadev.com/thumbs/movie.jpg',
@@ -118,20 +117,17 @@ export async function GET() {
   const subSitemaps: SitemapIndexEntry[] = [
     {
       loc: 'https://fomadev.com/sitemap-records.xml',
-      lastmod: new Date() // Hybrid Date Polymorphism (v1.2.3): Native Date object support
+      lastmod: new Date() // Hybrid Date Polymorphism (v1.2.3): Pass native JS Date objects directly!
     },
     {
-      // DX Resiliency & Normalization (v1.2.1): If a developer types 'url' instead of 'loc', 
-      // the index engine catches it automatically, normalizes it, and applies syntax checks!
-      url: 'https://fomadev.com/sitemap-products.xml', 
-      lastmod: '2026-07-05T12:00:00.000Z' // Hybrid Date Polymorphism (v1.2.3): Plain ISO string support
+      loc: 'https://fomadev.com/sitemap-products.xml', 
+      lastmod: '2026-07-05T12:00:00.000Z' // Hybrid Date Polymorphism (v1.2.3): Raw ISO strings also supported!
     }
   ];
 
-  // Enforces authoritative xmlns namespace schemas (v1.2.2) 
-  // while checking individual child locations through strict syntax engine guardrails.
+  // Enforces authoritative xmlns namespace schemas (v1.2.2)
   return getServerSitemapIndexResponse(subSitemaps, {
-    maxAge: 3600 // Custom CDN edge caching eviction lifespan in seconds (optional)
+    maxAge: 3600
   });
 }
 ```
