@@ -30,6 +30,7 @@ export function buildSitemapIndexXml(entries: SitemapIndexEntry[]): string {
     xml += `    <loc>${escapeXml(cleanLoc)}</loc>\n`;
     
     if (entry.lastmod) {
+      // Polymorphisme v1.2.3 : Conversion automatique des instances Date ou inclusion de la chaîne brute
       const date = entry.lastmod instanceof Date ? entry.lastmod.toISOString() : entry.lastmod;
       xml += `    <lastmod>${date}</lastmod>\n`;
     }
